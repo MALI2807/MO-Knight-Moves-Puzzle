@@ -1,417 +1,451 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Knight Move Puzzle</title>
-  <style>
-    :root {
-      --bg-light: linear-gradient(120deg, #f8f9fa, #e0f7fa);
-      --bg-dark: linear-gradient(120deg, #1e1e1e, #2b2b2b);
-      --text-light: #0d47a1;
-      --text-dark: #ffffff;
-    }
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      text-align: center;
-      margin-top: 30px;
-      background: var(--bg-light);
-      color: var(--text-light);
-      transition: all 0.3s ease-in-out;
-    }
-    body.dark-mode {
-      background: var(--bg-dark);
-      color: var(--text-dark);
-    }
-    table {
-      margin: auto;
-      border-collapse: separate;
-      border-spacing: 5px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.2);
-    }
-    td {
-      width: 60px;
-      height: 60px;
-      background: linear-gradient(145deg, #f0f0f0, #cacaca);
-      border-radius: 10px;
-      font-size: 22px;
-      font-weight: bold;
-      text-align: center;
-      vertical-align: middle;
-      cursor: pointer;
-      box-shadow: 5px 5px 10px #bebebe, -5px -5px 10px #ffffff;
-      transition: all 0.2s ease-in-out;
-    }
-    td:hover {
-      transform: scale(1.05);
-    }
-    td.valid {
-      background-color: #a5d6a7;
-      color: #1b5e20;
-    }
-    td.filled {
-      background-color: #4fc3f7;
-      color: white;
-      animation: pop 0.3s ease-in-out;
-    }
-    td.hint {
-      background-color: #fff176;
-    }
-    td.path {
-      outline: 2px dashed orange;
-    }
-    @keyframes pop {
-      0% { transform: scale(0.8); opacity: 0.5; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-    button, select, input[type="color"] {
-      margin: 10px;
-      padding: 10px 14px;
-      font-size: 16px;
-      border: none;
-      border-radius: 8px;
-      background: linear-gradient(to right, #42a5f5, #478ed1);
-      color: white;
-      cursor: pointer;
-      box-shadow: 3px 3px 8px rgba(0,0,0,0.2);
-      transition: background 0.3s ease-in-out;
-    }
-    button:hover {
-      background: linear-gradient(to right, #1976d2, #0d47a1);
-    }
-    #status {
-      font-weight: bold;
-      font-size: 24px;
-    }
-    #gameOver {
-      font-size: 48px;
-      color: red;
-      font-weight: bold;
-      margin-top: 20px;
-      display: none;
-    }
-    progress {
-      width: 60%;
-      height: 20px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Light Blue Knight's Tour Puzzle</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #e6f0fa; /* Light blue background */
+            transition: background-color 0.3s, color 0.3s;
+        }
+        body.dark-mode {
+            background-color: #1a2b3c; /* Darker blue for dark mode */
+            color: #ffffff;
+        }
+        #gameBoard {
+            display: grid;
+            grid-template-columns: repeat(6, 60px);
+            gap: 2px;
+            background-color: #333;
+            padding: 5px;
+            margin-top: 20px;
+        }
+        .cell {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            background-color: #ADD8E6; /* Light blue for all cells */
+            transition: background-color 0.3s;
+        }
+        .dark-mode .cell {
+            background-color: #87CEEB; /* Adjusted light blue for dark mode */
+            color: #000000;
+            border-color: #555;
+        }
+        .cell:hover {
+            filter: brightness(1.2); /* Brighten on hover */
+        }
+        .selected {
+            background-color: #28A745 !important; /* Green for selected */
+            color: white !important;
+        }
+        .dark-mode .selected {
+            background-color: #218838 !important;
+        }
+        .valid-move {
+            background-color: #FFC107 !important; /* Yellow for valid moves */
+            color: black !important;
+        }
+        .dark-mode .valid-move {
+            background-color: #CC9B00 !important;
+        }
+        #controls, #settings, #leaderboard {
+            margin: 20px;
+            text-align: center;
+        }
+        #status {
+            margin: 10px;
+            font-size: 18px;
+            color: #007BFF; /* Blue status text */
+        }
+        .dark-mode #status {
+            color: #4C9EFF;
+        }
+        #gameOver {
+            font-size: 48px;
+            color: #DC3545; /* Red for Game Over */
+            font-weight: bold;
+            display: none;
+            margin: 20px;
+        }
+        button {
+            padding: 10px;
+            font-size: 16px;
+            margin: 5px;
+            cursor: pointer;
+            background-color: #007BFF; /* Blue buttons */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .dark-mode button {
+            background-color: #4C9EFF;
+        }
+        .dark-mode button:hover {
+            background-color: #3b7acc;
+        }
+        select, input[type="text"], input[type="color"] {
+            padding: 10px;
+            font-size: 16px;
+            margin: 5px;
+            cursor: pointer;
+            border: 1px solid #007BFF;
+            border-radius: 5px;
+        }
+        .dark-mode select, .dark-mode input[type="text"], .dark-mode input[type="color"] {
+            background-color: #1a2b3c;
+            color: #ffffff;
+            border-color: #4C9EFF;
+        }
+        #leaderboard table {
+            border-collapse: collapse;
+            width: 100%;
+            max-width: 400px;
+            margin-top: 10px;
+            background-color: #ffffff;
+            border: 1px solid #007BFF;
+        }
+        .dark-mode #leaderboard table {
+            background-color: #2d3e50;
+            border-color: #4C9EFF;
+        }
+        #leaderboard th, #leaderboard td {
+            border: 1px solid #007BFF;
+            padding: 8px;
+            text-align: center;
+        }
+        .dark-mode #leaderboard th, .dark-mode #leaderboard td {
+            border-color: #4C9EFF;
+        }
+        #leaderboard th {
+            background-color: #28A745; /* Green header */
+            color: white;
+        }
+        .dark-mode #leaderboard th {
+            background-color: #218838;
+        }
+        #leaderboard td:nth-child(2) {
+            color: #DC3545; /* Red for names */
+        }
+        .dark-mode #leaderboard td:nth-child(2) {
+            color: #A71D2A;
+        }
+    </style>
 </head>
 <body>
-  <h1>Knight Move Puzzle</h1>
-  <div>
-    <button onclick="undoMove()">Undo</button>
-    <button onclick="resetGame()">Reset</button>
-    <button onclick="showHints()">Show Hints</button>
-    <button onclick="toggleTheme()">Toggle Dark/Light Mode</button>
-    <button onclick="togglePause()">Pause</button>
-    <label>Font Color: <input type="color" id="fontColorPicker" onchange="updateFontColor()"></label>
-    <label>Font Type:
-      <select id="fontTypeSelector" onchange="updateFontType()">
-        <option value="Segoe UI">Segoe UI</option>
-        <option value="Courier New">Courier New</option>
-        <option value="Comic Sans MS">Comic Sans MS</option>
-        <option value="Arial">Arial</option>
-        <option value="Georgia">Georgia</option>
-      </select>
-    </label>
-    <label>Mode:
-      <select id="modeSelector" onchange="changeMode()">
-        <option value="6">Classic (6x6)</option>
-        <option value="5">Easy (5x5)</option>
-        <option value="8">Hard (8x8)</option>
-      </select>
-    </label>
-  </div>
-  <table id="grid"></table>
-  <progress id="progressBar" value="0" max="36"></progress>
-  <p id="status">Click any cell to start with 1.</p>
-  <p>Moves: <span id="moveCount">0</span> | Time: <span id="timer">0</span>s | Score: <span id="score">0</span></p>
-  <div id="gameOver">GAME OVER</div>  <script>
-    let gridSize = 6;
-    let currentNumber = 1;
-    let lastRow = null, lastCol = null;
-    let moveHistory = [];
-    let timer = 0, timerInterval;
-    let isPaused = false;
+    <h1>Knight's Tour Puzzle (6x6)</h1>
+    <div id="status">Enter your name, then click a cell to start. Fill the board with numbers 1 to 36 using knight's moves.</div>
+    <div id="gameOver">Game Over</div>
+    <div id="gameBoard"></div>
+    <div id="controls">
+        <button onclick="resetGame()">Reset Game</button>
+        <button onclick="undoMove()">Undo Move</button>
+        <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
+    </div>
+    <div id="settings">
+        <label>Font Size: 
+            <select id="fontSize" onchange="changeFont()">
+                <option value="16">16px</option>
+                <option value="18" selected>18px</option>
+                <option value="20">20px</option>
+                <option value="24">24px</option>
+            </select>
+        </label>
+        <label>Font Type: 
+            <select id="fontType" onchange="changeFont()">
+                <option value="Arial">Arial</option>
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="Courier New">Courier New</option>
+                <option value="Verdana">Verdana</option>
+            </select>
+        </label>
+        <label>Text Color: 
+            <input type="color" id="textColor" value="#000000" onchange="changeFont()">
+        </label>
+    </div>
+    <div id="leaderboard">
+        <h2>Leaderboard</h2>
+        <label>Player Name: <input type="text" id="playerName" maxlength="20"></label>
+        <table id="highScores">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Name</th>
+                    <th>Score</th>
+                    <th>Time (s)</th>
+                </tr>
+            </thead>
+            <tbody id="scoresBody"></tbody>
+        </table>
+    </div>
 
-    const grid = document.getElementById('grid');
-    const status = document.getElementById('status');
-    const moveCountEl = document.getElementById('moveCount');
-    const timerEl = document.getElementById('timer');
-    const scoreEl = document.getElementById('score');
-    const fontColorPicker = document.getElementById('fontColorPicker');
-    const fontTypeSelector = document.getElementById('fontTypeSelector');
-    const gameOverEl = document.getElementById('gameOver');
-    const progressBar = document.getElementById('progressBar');
-    const modeSelector = document.getElementById('modeSelector');
+    <script>
+        const boardSize = 6;
+        let board = [];
+        let currentNumber = 1;
+        let gameStarted = false;
+        let selectedCell = null;
+        let startTime = null;
+        let playerName = '';
+        let highScores = JSON.parse(localStorage.getItem('knightTourHighScores')) || [];
+        let moveHistory = [];
 
-    function toggleTheme() {
-      document.body.classList.toggle("dark-mode");
-    }
+        // Knight's move offsets
+        const knightMoves = [
+            [-2, -1], [-2, 1], [-1, -2], [-1, 2],
+            [1, -2], [1, 2], [2, -1], [2, 1]
+        ];
 
-    function togglePause() {
-      isPaused = !isPaused;
-      if (isPaused) clearInterval(timerInterval);
-      else startTimer();
-    }
-
-    function changeMode() {
-      gridSize = parseInt(modeSelector.value);
-      resetGame();
-      grid.innerHTML = '';
-      createGrid();
-    }
-
-    function createGrid() {
-      for (let r = 0; r < gridSize; r++) {
-        const row = grid.insertRow();
-        for (let c = 0; c < gridSize; c++) {
-          const cell = row.insertCell();
-          cell.dataset.row = r;
-          cell.dataset.col = c;
-          cell.addEventListener('click', handleClick);
+        // Initialize the game board
+        function initBoard() {
+            const gameBoard = document.getElementById('gameBoard');
+            gameBoard.innerHTML = '';
+            board = Array(boardSize).fill().map(() => Array(boardSize).fill(0));
+            document.getElementById('gameOver').style.display = 'none';
+            moveHistory = [];
+            
+            for (let i = 0; i < boardSize; i++) {
+                for (let j = 0; j < boardSize; j++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.dataset.row = i;
+                    cell.dataset.col = j;
+                    cell.addEventListener('click', () => handleCellClick(i, j));
+                    gameBoard.appendChild(cell);
+                }
+            }
+            updateBoard();
+            updateStatus();
+            updateLeaderboard();
+            changeFont(); // Ensure text color is applied
         }
-      }
-    }
 
-    function handleClick(e) {
-      if (isPaused) return;
-      const cell = e.target;
-      const row = parseInt(cell.dataset.row);
-      const col = parseInt(cell.dataset.col);
-      if (cell.textContent !== '') return;
-      if (currentNumber === 1 || isKnightMove(row, col)) {
-        if (moveHistory.length > 0) {
-          const prev = moveHistory[moveHistory.length - 1];
-          grid.rows[prev.row].cells[prev.col].classList.remove('path');
-        }
-        cell.textContent = currentNumber;
-        cell.classList.add('filled', 'path');
-        cell.style.color = fontColorPicker.value;
-        cell.style.fontFamily = fontTypeSelector.value;
-        moveHistory.push({ row, col, number: currentNumber });
-        lastRow = row;
-        lastCol = col;
-        currentNumber++;
-        moveCountEl.textContent = moveHistory.length;
-        progressBar.max = gridSize * gridSize;
-        progressBar.value = currentNumber - 1;
-        highlightValidMoves();
-        startTimer();
-        calculateScore();
-        saveGameState();
-        if (currentNumber > gridSize * gridSize) {
-          clearInterval(timerInterval);
-          calculateScore();
-          status.textContent = "\u2728 Congratulations! Puzzle complete in " + timer + "s \u2728";
-          saveScore(scoreEl.textContent);
-        } else if (!hasAnyValidMoves()) {
-          clearInterval(timerInterval);
-          calculateScore();
-          gameOverEl.style.display = 'block';
-          status.textContent = "No more moves available.";
-        } else {
-          status.textContent = `Now place ${currentNumber}`;
-        }
-      }
-    }
+        // Handle cell clicks
+        function handleCellClick(row, col) {
+            playerName = document.getElementById('playerName').value.trim() || 'Anonymous';
+            if (board[row][col] !== 0) return;
 
-    function isKnightMove(r, c) {
-      if (lastRow === null || lastCol === null) return true;
-      const dr = Math.abs(r - lastRow);
-      const dc = Math.abs(c - lastCol);
-      return (dr === 2 && dc === 1) || (dr === 1 && dc === 2);
-    }
-
-    function highlightValidMoves() {
-      for (let row of grid.rows) {
-        for (let cell of row.cells) {
-          const r = parseInt(cell.dataset.row);
-          const c = parseInt(cell.dataset.col);
-          if (cell.textContent === '') {
-            if (isKnightMove(r, c)) {
-              cell.classList.add('valid');
-              cell.style.backgroundColor = '#a5d6a7';
+            if (!gameStarted) {
+                board[row][col] = currentNumber++;
+                gameStarted = true;
+                selectedCell = [row, col];
+                startTime = Date.now();
+                moveHistory.push({ row, col, number: 1 });
+                updateBoard();
+                highlightValidMoves(row, col);
+                updateStatus();
             } else {
-              cell.classList.remove('valid');
-              cell.style.backgroundColor = '';
+                if (isValidKnightMove(selectedCell[0], selectedCell[1], row, col)) {
+                    board[row][col] = currentNumber++;
+                    moveHistory.push({ row, col, number: currentNumber - 1 });
+                    selectedCell = [row, col];
+                    updateBoard();
+                    highlightValidMoves(row, col);
+                    updateStatus();
+                    checkWinCondition();
+                    checkGameOver(row, col);
+                }
             }
-          } else {
-            cell.classList.remove('valid');
-            cell.style.backgroundColor = '';
-          }
         }
-      }
-    }
 
-    function hasAnyValidMoves() {
-      for (let r = 0; r < gridSize; r++) {
-        for (let c = 0; c < gridSize; c++) {
-          if (grid.rows[r].cells[c].textContent === '' && isKnightMove(r, c)) {
-            return true;
-          }
-        }
-      }
-      return false;
-    }
-
-    function startTimer() {
-      if (!timerInterval) {
-        timerInterval = setInterval(() => {
-          timer++;
-          timerEl.textContent = timer;
-        }, 1000);
-      }
-    }
-
-    function calculateScore() {
-      const progressFactor = (currentNumber - 1) / (gridSize * gridSize);
-      const speedFactor = timer > 0 ? (1 / timer) : 0;
-      const score = Math.round(progressFactor * 800 + speedFactor * 200 * progressFactor);
-      scoreEl.textContent = score;
-    }
-
-    function resetGame() {
-      clearInterval(timerInterval);
-      timer = 0;
-      timerInterval = null;
-      timerEl.textContent = '0';
-      scoreEl.textContent = '0';
-      currentNumber = 1;
-      lastRow = lastCol = null;
-      moveHistory = [];
-      status.textContent = "Click any cell to start with 1.";
-      moveCountEl.textContent = '0';
-      gameOverEl.style.display = 'none';
-      grid.innerHTML = '';
-      createGrid();
-      progressBar.value = 0;
-    }
-
-    function undoMove() {
-      if (moveHistory.length === 0) return;
-      const lastMove = moveHistory.pop();
-      const cell = grid.rows[lastMove.row].cells[lastMove.col];
-      cell.textContent = '';
-      cell.classList.remove('filled', 'path');
-      cell.style.color = '';
-      cell.style.fontFamily = '';
-      currentNumber--;
-      moveCountEl.textContent = moveHistory.length;
-      progressBar.value = currentNumber - 1;
-      if (moveHistory.length > 0) {
-        const prev = moveHistory[moveHistory.length - 1];
-        lastRow = prev.row;
-        lastCol = prev.col;
-      } else {
-        lastRow = lastCol = null;
-      }
-      status.textContent = `Now place ${currentNumber}`;
-      highlightValidMoves();
-      calculateScore();
-      gameOverEl.style.display = 'none';
-      startTimer();
-    }
-
-    function showHints() {
-      for (let row of grid.rows) {
-        for (let cell of row.cells) {
-          cell.classList.remove('hint');
-          const r = parseInt(cell.dataset.row);
-          const c = parseInt(cell.dataset.col);
-          if (cell.textContent === '' && isKnightMove(r, c)) {
-            const moves = countNextKnightMoves(r, c);
-            if (moves <= 2) {
-              cell.classList.add('hint');
+        // Undo last move
+        function undoMove() {
+            if (!gameStarted || moveHistory.length <= 1) return;
+            const lastMove = moveHistory.pop();
+            board[lastMove.row][lastMove.col] = 0;
+            currentNumber--;
+            selectedCell = moveHistory.length > 0 ? [moveHistory[moveHistory.length - 1].row, moveHistory[moveHistory.length - 1].col] : null;
+            if (moveHistory.length === 0) {
+                gameStarted = false;
+                startTime = null;
             }
-          }
+            document.getElementById('gameOver').style.display = 'none';
+            updateBoard();
+            if (selectedCell) highlightValidMoves(selectedCell[0], selectedCell[1]);
+            else document.querySelectorAll('.cell').forEach(cell => cell.classList.remove('selected', 'valid-move'));
+            updateStatus();
         }
-      }
-    }
 
-    function countNextKnightMoves(r, c) {
-      const knightMoves = [
-        [2, 1], [1, 2], [-1, 2], [-2, 1],
-        [-2, -1], [-1, -2], [1, -2], [2, -1]
-      ];
-      let count = 0;
-      for (let [dr, dc] of knightMoves) {
-        let nr = r + dr;
-        let nc = c + dc;
-        if (nr >= 0 && nr < gridSize && nc >= 0 && nc < gridSize) {
-          let nextCell = grid.rows[nr].cells[nc];
-          if (nextCell.textContent === '') count++;
+        // Check if a move is a valid knight's move
+        function isValidKnightMove(fromRow, fromCol, toRow, toCol) {
+            for (let [dr, dc] of knightMoves) {
+                if (fromRow + dr === toRow && fromCol + dc === toCol) {
+                    return true;
+                }
+            }
+            return false;
         }
-      }
-      return count;
-    }
 
-    function updateFontColor() {
-      for (let row of grid.rows) {
-        for (let cell of row.cells) {
-          if (cell.classList.contains('filled')) {
-            cell.style.color = fontColorPicker.value;
-          }
+        // Highlight valid moves
+        function highlightValidMoves(row, col) {
+            document.querySelectorAll('.cell').forEach(cell => {
+                cell.classList.remove('selected', 'valid-move');
+            });
+
+            const selected = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
+            selected.classList.add('selected');
+
+            for (let [dr, dc] of knightMoves) {
+                const newRow = row + dr;
+                const newCol = col + dc;
+                if (isValidPosition(newRow, newCol) && board[newRow][newCol] === 0) {
+                    const cell = document.querySelector(`.cell[data-row="${newRow}"][data-col="${newCol}"]`);
+                    cell.classList.add('valid-move');
+                }
+            }
         }
-      }
-    }
 
-    function updateFontType() {
-      for (let row of grid.rows) {
-        for (let cell of row.cells) {
-          if (cell.classList.contains('filled')) {
-            cell.style.fontFamily = fontTypeSelector.value;
-          }
+        // Check if position is within board
+        function isValidPosition(row, col) {
+            return row >= 0 && row < boardSize && col >= 0 && col < boardSize;
         }
-      }
-    }
 
-    function saveGameState() {
-      const state = {
-        gridSize,
-        currentNumber,
-        lastRow,
-        lastCol,
-        moveHistory,
-        timer
-      };
-      localStorage.setItem('gameState', JSON.stringify(state));
-    }
+        // Update the board display
+        function updateBoard() {
+            for (let i = 0; i < boardSize; i++) {
+                for (let j = 0; j < boardSize; j++) {
+                    const cell = document.querySelector(`.cell[data-row="${i}"][data-col="${j}"]`);
+                    cell.textContent = board[i][j] === 0 ? '' : board[i][j];
+                }
+            }
+        }
 
-    function loadGameState() {
-      const state = JSON.parse(localStorage.getItem('gameState'));
-      if (!state) return;
-      gridSize = state.gridSize;
-      modeSelector.value = gridSize;
-      resetGame();
-      for (let move of state.moveHistory) {
-        const cell = grid.rows[move.row].cells[move.col];
-        cell.textContent = move.number;
-        cell.classList.add('filled');
-        moveHistory.push(move);
-        lastRow = move.row;
-        lastCol = move.col;
-        currentNumber = move.number + 1;
-      }
-      timer = state.timer;
-      timerEl.textContent = timer;
-      moveCountEl.textContent = moveHistory.length;
-      progressBar.max = gridSize * gridSize;
-      progressBar.value = currentNumber - 1;
-      highlightValidMoves();
-      calculateScore();
-      startTimer();
-    }
+        // Update status message
+        function updateStatus() {
+            const status = document.getElementById('status');
+            if (currentNumber <= boardSize * boardSize) {
+                status.textContent = `Place number ${currentNumber} using a knight's move.`;
+            } else {
+                status.textContent = 'Congratulations! You completed the puzzle!';
+            }
+        }
 
-    function saveScore(score) {
-      let scores = JSON.parse(localStorage.getItem('scores') || '[]');
-      scores.push({ score: parseInt(score), time: timer });
-      scores.sort((a, b) => b.score - a.score);
-      scores = scores.slice(0, 5);
-      localStorage.setItem('scores', JSON.stringify(scores));
-    }
+        // Check win condition
+        function checkWinCondition() {
+            if (currentNumber > boardSize * boardSize) {
+                const timeTaken = (Date.now() - startTime) / 1000;
+                const score = calculateScore(currentNumber - 1, timeTaken);
+                saveHighScore(playerName, score, timeTaken);
+                document.querySelectorAll('.cell').forEach(cell => {
+                    cell.style.cursor = 'default';
+                    cell.classList.remove('valid-move', 'selected');
+                });
+            }
+        }
 
-    window.addEventListener('DOMContentLoaded', () => {
-      createGrid();
-      loadGameState();
-    });
-  </script></body>
+        // Check for game over (no valid moves)
+        function checkGameOver(row, col) {
+            let hasMoves = false;
+            for (let [dr, dc] of knightMoves) {
+                const newRow = row + dr;
+                const newCol = col + dc;
+                if (isValidPosition(newRow, newCol) && board[newRow][newCol] === 0) {
+                    hasMoves = true;
+                    break;
+                }
+            }
+            if (!hasMoves && currentNumber <= boardSize * boardSize) {
+                const timeTaken = (Date.now() - startTime) / 1000;
+                const score = calculateScore(currentNumber - 1, timeTaken);
+                saveHighScore(playerName, score, timeTaken);
+                document.getElementById('gameOver').style.display = 'block';
+                document.querySelectorAll('.cell').forEach(cell => {
+                    cell.style.cursor = 'default';
+                    cell.classList.remove('valid-move', 'selected');
+                });
+            }
+        }
+
+        // Calculate score (0-1000)
+        function calculateScore(highestNumber, timeTaken) {
+            const maxNumber = boardSize * boardSize;
+            const numberScore = (highestNumber / maxNumber) * 600; // 60% weight on progress
+            const timePenalty = Math.min(timeTaken / 60, 1) * 400; // 40% weight on time
+            return Math.round(1000 - timePenalty + numberScore);
+        }
+
+        // Save high score
+        function saveHighScore(name, score, time) {
+            highScores.push({ name, score, time });
+            highScores.sort((a, b) => b.score - a.score);
+            highScores = highScores.slice(0, 5); // Keep top 5 scores
+            localStorage.setItem('knightTourHighScores', JSON.stringify(highScores));
+            updateLeaderboard();
+        }
+
+        // Update leaderboard
+        function updateLeaderboard() {
+            const scoresBody = document.getElementById('scoresBody');
+            scoresBody.innerHTML = '';
+            highScores.forEach((entry, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${entry.name}</td>
+                    <td>${entry.score}</td>
+                    <td>${entry.time.toFixed(1)}</td>
+                `;
+                scoresBody.appendChild(row);
+            });
+        }
+
+        // Toggle dark mode
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            updateBoard(); // Ensure cell colors are updated
+        }
+
+        // Change font size, type, and color
+        function changeFont() {
+            const fontSize = document.getElementById('fontSize').value + 'px';
+            const fontType = document.getElementById('fontType').value;
+            const textColor = document.getElementById('textColor').value;
+            document.querySelectorAll('.cell').forEach(cell => {
+                cell.style.fontSize = fontSize;
+                cell.style.fontFamily = fontType;
+                cell.style.color = textColor;
+            });
+            document.getElementById('status').style.fontSize = fontSize;
+            document.getElementById('status').style.fontFamily = fontType;
+            document.getElementById('status').style.color = textColor;
+        }
+
+        // Reset the game
+        function resetGame() {
+            if (gameStarted && currentNumber > 1 && currentNumber <= boardSize * boardSize) {
+                const timeTaken = (Date.now() - startTime) / 1000;
+                saveHighScore(playerName, calculateScore(currentNumber - 1, timeTaken), timeTaken);
+            }
+            board = Array(boardSize).fill().map(() => Array(boardSize).fill(0));
+            currentNumber = 1;
+            gameStarted = false;
+            selectedCell = null;
+            startTime = null;
+            moveHistory = [];
+            document.getElementById('playerName').value = '';
+            initBoard();
+            document.querySelectorAll('.cell').forEach(cell => {
+                cell.style.cursor = 'pointer';
+                cell.classList.remove('valid-move', 'selected');
+            });
+        }
+
+        // Initialize the game
+        initBoard();
+    </script>
+</body>
 </html>
